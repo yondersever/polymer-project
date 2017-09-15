@@ -1,0 +1,99 @@
+<dom-module id="pd-shopping-cart">
+    <template>
+        <style>
+            .product-image {
+                width: 100px;
+                height: 100px;
+            }
+
+            paper-button.custom {
+                --paper-button-ink-color: var(--paper-pink-a200);
+                /* These could also be individually defined for each of the
+      specific css classes, but we'll just do it once as an example */
+                --paper-button-flat-keyboard-focus: {
+                    background-color: var(--paper-pink-a200);
+                    color: white !important;
+                }
+                ;
+                --paper-button-raised-keyboard-focus: {
+                    background-color: var(--paper-pink-a200) !important;
+                    color: white !important;
+                }
+                ;
+            }
+
+            paper-button.custom:hover {
+                background-color: var(--paper-indigo-100);
+            }
+
+            paper-button.red {
+                background-color: var(--paper-red-500);
+                color: white;
+            }
+
+            paper-button.red[active] {
+                background-color: var(--paper-red-500);
+            }
+        </style>
+        <template is="dom-if" if="{{!productList.length}}">
+            <span>Your shopping cart is empty!</span>
+        </template>
+        <template is="dom-if" if="{{productList.length}}">
+            <div>
+                <template is="dom-repeat" id="productList" items="{{productList}}" as="product">
+                    <div>
+                        <img src="app/images/{{product.imageURL}}" class="product-image" /> {{product.name}} - {{product.description}}
+                        <paper-button raised class="custom red" on-click="removeFromCart">Remove From Cart</paper-button>
+                    </div>
+                </template>
+            </div>
+        </template>
+    </template>
+
+</dom-module>
+
+<script>
+    Polymer({
+        is: "pd-shopping-cart",
+        properties: {
+            productList: {
+                type: Array,
+                value: []
+            }
+        },
+        ready: function () {
+            this.getProducts();
+        },
+        getProducts: function () {
+            debugger;
+            var cookie = document.getElementById("cartCookie");
+            var cookieValue = cookie.value;
+            this.productList = cookieValue != "" ? JSON.parse(cookieValue) : [];
+        },
+        removeFromCart: function (e) {
+            debugger;
+            var product = e.model.__data__.product;
+            var cookie = document.getElementById("cartCookie");
+            var cookieValue = cookie.value;
+            var products = cookieValue != "" ? JSON.parse(cookieValue) : [];
+            if (!Array.isArray(products)) {
+                products = [products];
+            }
+            var index = -1;
+            for (var i = 0; i < products.length; i++) {
+                if (product.id == products[i].id) {
+                    index = i;
+                    break;
+                }
+            }
+
+            if (index != -1) {
+                products.splice(index, 1);
+                cookie.value = JSON.stringify(products);
+                this.productList = products;
+            }
+
+        }
+    });
+
+</script>

@@ -1,0 +1,96 @@
+<dom-module id="pd-product-list">
+    <template>
+        <style>
+            .product-image {
+                width: 100px;
+                height: 100px;
+            }
+
+            paper-button.custom {
+                --paper-button-ink-color: var(--paper-pink-a200);
+                /* These could also be individually defined for each of the
+      specific css classes, but we'll just do it once as an example */
+                --paper-button-flat-keyboard-focus: {
+                    background-color: var(--paper-pink-a200);
+                    color: white !important;
+                }
+                ;
+                --paper-button-raised-keyboard-focus: {
+                    background-color: var(--paper-pink-a200) !important;
+                    color: white !important;
+                }
+                ;
+            }
+
+            paper-button.custom:hover {
+                background-color: var(--paper-indigo-100);
+            }
+
+            paper-button.green {
+                background-color: var(--paper-green-500);
+                color: white;
+            }
+
+            paper-button.green[active] {
+                background-color: var(--paper-red-500);
+            }
+        </style>
+        <div>
+            <template is="dom-repeat" id="productList" items="{{productList}}" as="product">
+                <div>
+                    <img src="app/images/{{product.imageURL}}" class="product-image" /> {{product.name}} - {{product.description}}
+                    <paper-button raised class="custom green" on-click="addToCookie">Add To Cart</paper-button>
+                </div>
+            </template>
+        </div>
+        <iron-ajax id="ajax" url="http://localhost:5000/products" method="GET" handle-as="json" on-response="getProductsCallBack"
+            with-credentials="true"></iron-ajax>
+            <paper-dialog id="dialog" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+                <h2>Added Successfully!</h2>
+            </paper-dialog>
+    </template>
+
+</dom-module>
+
+<script>
+    Polymer({
+        is: "pd-product-list",
+        properties: {
+            productList: {
+                type: Array,
+                value: []
+            }
+        },
+        ready: function () {
+            this.getProducts();
+        },
+        getProducts: function () {
+            var self = this;
+            self.$.ajax.generateRequest();
+        },
+        getProductsCallBack: function (response) {
+            var self = this;
+            response = response.detail.response;
+            if (response.success) {
+                self.productList = response.products;
+            }
+            else {
+                self.productList = [];
+            }
+        },
+        addToCookie: function (e) {
+            debugger;
+            var cookie = document.getElementById("cartCookie");
+            var product = e.model.__data__.product;
+            var cookieValue = cookie.value;
+            var currentItems = cookieValue != "" && cookieValue != null ? JSON.parse(cookieValue) : [];
+            if (!Array.isArray(currentItems)) {
+                currentItems = [currentItems];
+            }
+            currentItems.push(product);
+            cookie.value = JSON.stringify(currentItems);
+            this.$.dialog.open();
+        }
+    });
+
+</script>
